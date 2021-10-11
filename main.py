@@ -27,7 +27,7 @@ More info about the MicroPython Version see https://lemariva.com
 """
 import gc
 import machine
-import network
+import network, ntptime
 import time
 
 try:
@@ -51,17 +51,20 @@ except:
     import struct
 
 # for ws2812b
-from wipyWS2812.ws2812 import WS2812
+#from wipyWS2812.ws2812 import WS2812
 from uos import uname
 
 try:
     from machine import RTC
 
+#     if not hasattr(RTC, "ntp_sync"):
+#         from ESP32MicroPython.timeutils import RTC
+# except:
+#     from ESP32MicroPython.timeutils import RTC
     if not hasattr(RTC, "ntp_sync"):
-        from ESP32MicroPython.timeutils import RTC
+        from machine import RTC
 except:
-    from ESP32MicroPython.timeutils import RTC
-
+    from machine import RTC
 # This XML is the minimum needed to define one of our virtual switches
 # to the Amazon Echo Dot / Amazon Echo (2nd generation)
 
@@ -132,9 +135,9 @@ INADDR_ANY = 0
 global_epoch = 0  # time over ntp-server
 
 # W2812b
-ledNumber = 144  # number of leds
-chain = []
-clock = None
+# ledNumber = 144  # number of leds
+# chain = []
+# clock = None
 
 
 def dbg(msg):
@@ -602,6 +605,41 @@ class upnp_broadcast_responder:
         dbg("UPnP broadcast listener: new device registered")
 
 
+# class rest_api_handler(object):
+#     """
+#      This is an example handler class. The fauxmo class expects handlers to be
+#      instances of objects that have on() and off() methods that return True
+#      on success and False otherwise.
+
+#      This example class takes a color and brightness.
+#      It returns always True and ignores any return data.
+#     """
+
+#     def __init__(self, on_color, on_brightness):
+#         global ledNumber
+#         global ws2812_chain
+#         self.on_color = on_color
+#         self.on_brightnessr = on_brightness
+#         ws2812_chain.set_brightness(on_brightness)
+
+#     def on(self):
+#         global ledNumber
+#         global ws2812_chain
+#         # global_epoch = timeutils.epoch() # updating time using ntp
+#         data = [self.on_color for i in range(ledNumber)]
+#         ws2812_chain.show(data)
+#         dbg("response on")
+#         return True
+
+#     def off(self):
+#         global ledNumber
+#         global ws2812_chain
+#         # global_epoch = timeutils.epoch() # updating time using ntp
+#         data = [(0, 0, 0) for i in range(ledNumber)]
+#         ws2812_chain.show(data)
+#         dbg("response off")
+#         return True
+
 class rest_api_handler(object):
     """
      This is an example handler class. The fauxmo class expects handlers to be
@@ -613,27 +651,27 @@ class rest_api_handler(object):
     """
 
     def __init__(self, on_color, on_brightness):
-        global ledNumber
-        global ws2812_chain
+        # global ledNumber
+        # global ws2812_chain
         self.on_color = on_color
         self.on_brightnessr = on_brightness
-        ws2812_chain.set_brightness(on_brightness)
+        # ws2812_chain.set_brightness(on_brightness)
 
     def on(self):
-        global ledNumber
-        global ws2812_chain
+        # global ledNumber
+        # global ws2812_chain
         # global_epoch = timeutils.epoch() # updating time using ntp
-        data = [self.on_color for i in range(ledNumber)]
-        ws2812_chain.show(data)
+        # data = [self.on_color for i in range(ledNumber)]
+        # ws2812_chain.show(data)
         dbg("response on")
         return True
 
     def off(self):
-        global ledNumber
-        global ws2812_chain
+        # global ledNumber
+        # global ws2812_chain
         # global_epoch = timeutils.epoch() # updating time using ntp
-        data = [(0, 0, 0) for i in range(ledNumber)]
-        ws2812_chain.show(data)
+        # data = [(0, 0, 0) for i in range(ledNumber)]
+        # ws2812_chain.show(data)
         dbg("response off")
         return True
 
@@ -645,11 +683,11 @@ class InvalidPortException(Exception):
 
 def thread_echo(args):
     global DEBUG
-    global clock
-    global ws2812_chain
+    # global clock
+    # global ws2812_chain
     # Set up our singleton for polling the sockets for data ready
 
-    ws2812_chain = WS2812(ledNumber=ledNumber, brightness=100)
+    # ws2812_chain = WS2812(ledNumber=ledNumber, brightness=100)
     p = poller()
 
     """
@@ -733,8 +771,12 @@ def thread_echo(args):
         clock = time  # gmtime function needed
     elif uname().machine == "ESP32 module with ESP32":
         # Wemos ESP-WROOM-32
-        clock = RTC()  # gmtime function needed
-        clock.ntp_sync("time1.google.com")
+        #clock = RTC()  # gmtime function needed
+        #clock.ntp_sync("time1.google.com")
+        try:
+            ntptime.settime()
+        except Exception as e:
+            dbg(e)
 
     dbg("Entering main loop\n")
     while True:
