@@ -31,12 +31,12 @@ import network, ntptime
 import time
 from machine import Pin, WDT
 import uasyncio as asyncio
-# try:
-#     import _thread
+try:
+    import _thread
 
-#     thread_available = True
-# except:
-#     thread_available = False
+    thread_available = True
+except:
+    thread_available = False
 
 try:
     import uselect as select
@@ -821,11 +821,6 @@ async def thread_echo(args):
         },
         {
             "description": "orange led",
-            "port": 12344,
-            "handler": gpio_handler(13),
-        },
-        {
-            "description": "ble test",
             "port": 12344,
             "handler": gpio_handler(13),
         },
