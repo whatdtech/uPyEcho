@@ -30,13 +30,12 @@ import machine
 import network, ntptime
 import time
 from machine import Pin, WDT
-import uasyncio as asyncio
-# try:
-#     import _thread
+try:
+    import _thread
 
-#     thread_available = True
-# except:
-#     thread_available = False
+    thread_available = True
+except:
+    thread_available = False
 
 try:
     import uselect as select
@@ -72,8 +71,8 @@ try:
         from machine import RTC
 except:
     from machine import RTC
-# This XML is the minimum needed to define one of our virtual switches
-# to the Amazon Echo Dot / Amazon Echo (2nd generation)
+# This XML is the minimum needed to define one of our virtual switches <UDN>uuid:Socket-1_0-%(device_serial)s</UDN>
+# to the Amazon Echo Dot / Amazon Echo (2nd generation)<friendlyName>%(device_name)s</friendlyName>
 
 SETUP_XML = """<?xml version="1.0"?>
 <root>
@@ -144,7 +143,7 @@ global_epoch = 0  # time over ntp-server
 # W2812b
 # ledNumber = 144  # number of leds
 # chain = []
-# clock = None
+clock = None
 
 
 def dbg(msg):
@@ -322,7 +321,7 @@ class upnp_device:
 
     def respond_to_search(self, destination, search_target):
         dbg("Responding to search for %s" % self.get_name())
-        date_str = format_timetuple_and_zone(clock.gmtime(), "GMT")
+        date_str = format_timetuple_and_zone(time.gmtime(), "GMT")
         location_url = self.root_url % {
             "ip_address": self.ip_address,
             "port": self.port,
@@ -368,21 +367,21 @@ def set_global_exception():
         import sys
         sys.print_exception(context["exception"])
         sys.exit()
-    loop = asyncio.get_event_loop()
-    loop.set_exception_handler(handle_exception)
+    # loop = asyncio.get_event_loop()
+    # loop.set_exception_handler(handle_exception)
 
-async def notifier(csc):
+def notifier(csc):
     while True:
         wdt.feed()
         dbg("awaiting connection...")
-        await csc.connected.wait()
+        csc.connected.wait()
         dbg("connected...")
         while csc.connected.is_set():
             dbg("notifying...")
             csc.notify()
-            await asyncio.sleep_ms(1000)
+            time.sleep_ms(1000)
         dbg("disconnected...")
-async def writer(csc):
+def writer(csc):
     # csc.irq(handler=on_rx)
     def on_rx():
         # print("rx: ", uart.read().decode().strip())
@@ -396,14 +395,16 @@ async def writer(csc):
     while True:
         wdt.feed()
         dbg("awaiting connection...")
-        await csc.connected.wait()
+        time.sleep_ms(1000)
+        csc.connected.wait()
         dbg("connected...")
         while csc.connected.is_set():
             dbg("waiting for client token...")
             # csc.notif(str(77) + "\n")
             # csc.write(str(77) + "\n")
-            await asyncio.sleep_ms(1000)
+            time.sleep_ms(1000)
         dbg("disconnected...")
+
 
 csc = CSCDevice(name="wtt", wheel_pin=Pin(32), crank_pin=Pin(33), data = '88')
 class fauxmo(upnp_device):
@@ -455,7 +456,7 @@ class fauxmo(upnp_device):
         ):
             state = self.getState()
             soap = GetBinaryState_soap % {"state_realy": state}
-            date_str = format_timetuple_and_zone(clock.gmtime(), "GMT")
+            date_str = format_timetuple_and_zone(time.gmtime(), "GMT")
             message = (
                 "HTTP/1.1 200 OK\r\n"
                 "CONTENT-LENGTH: %d\r\n"
@@ -471,7 +472,7 @@ class fauxmo(upnp_device):
             socket.send(message)
         elif data.find(b"GET /eventservice.xml HTTP/1.1") == 0:
             dbg("Responding to eventservice.xml for %s" % self.name)
-            date_str = format_timetuple_and_zone(clock.gmtime(), "GMT")
+            date_str = format_timetuple_and_zone(time.gmtime(), "GMT")
             message = (
                 "HTTP/1.1 200 OK\r\n"
                 "CONTENT-LENGTH: %d\r\n"
@@ -488,7 +489,7 @@ class fauxmo(upnp_device):
         elif data.find(b"GET /setup.xml HTTP/1.1") == 0:
             dbg("Responding to setup.xml for %s" % self.name)
             xml = SETUP_XML % {"device_name": self.name, "device_serial": self.serial}
-            date_str = format_timetuple_and_zone(clock.gmtime(), "GMT")
+            date_str = format_timetuple_and_zone(time.gmtime(), "GMT")
             message = (
                 "HTTP/1.1 200 OK\r\n"
                 "CONTENT-LENGTH: %d\r\n"
@@ -523,7 +524,7 @@ class fauxmo(upnp_device):
             if success:
                 state = self.getState()
                 soap = GetBinaryState_soap % {"state_realy": state}
-                date_str = format_timetuple_and_zone(clock.gmtime(), "GMT")
+                date_str = format_timetuple_and_zone(time.gmtime(), "GMT")
                 message = (
                     "HTTP/1.1 200 OK\r\n"
                     "CONTENT-LENGTH: %d\r\n"
@@ -773,7 +774,7 @@ class InvalidPortException(Exception):
     pass
 
 
-async def thread_echo(args):
+def thread_echo(args):
     global DEBUG
     # global clock
     # global ws2812_chain
@@ -801,33 +802,28 @@ async def thread_echo(args):
     devices = [
         {
             "description": "white led",
-            "port": 12340,
+            "port": 8081,
             "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
             "description": "red led",
-            "port": 12341,
+            "port": 8082,
             "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
             "description": "blue led",
-            "port": 12342,
+            "port": 8083,
             "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
             "description": "green led",
-            "port": 12343,
+            "port": 8084,
             "handler": rest_api_handler1((0, 255, 0), 90),
         },
         {
             "description": "orange led",
-            "port": 12344,
-            "handler": gpio_handler(13),
-        },
-        {
-            "description": "ble test",
-            "port": 12344,
-            "handler": gpio_handler(13),
+            "port": 8085,
+            "handler": rest_api_handler1((255, 165, 0), 90),
         },
     ]
 
@@ -868,7 +864,7 @@ async def thread_echo(args):
         clock = time  # gmtime function needed
     elif uname().machine == "ESP32 module with ESP32":
         # Wemos ESP-WROOM-32
-        #clock = RTC()  # gmtime function needed
+        clock = RTC()  # gmtime function needed
         #clock.ntp_sync("time1.google.com")
         try:
             ntptime.settime()
@@ -887,45 +883,11 @@ async def thread_echo(args):
             # break
 
 
-# if thread_available:
-#     print("Starting echo serviceList on separated thread\n")
-#     _thread.start_new_thread(thread_echo, ("",))
-# else:
-#     print("Starting echo services\n")
-#     thread_echo("")
-
-async def all_tasks():
-    wdt.feed()
-    print("free ram {!r}".format(gc.mem_free()))
-
-    dbg('1st task')
-    set_global_exception()
-    # csc = CSCDevice(name="wtt", wheel_pin=Pin(13), crank_pin=Pin(14), data = '88')
-    asyncio.create_task(writer(csc))
-    asyncio.create_task(thread_echo(""))
-    # t = time.localtime(time.time() + 19800)
-    # try:
-    #   await asyncio.wait_for(time_match(), (56-t[5]))
-    # except asyncio.TimeoutError:
-    #   dbg('schedule validate every min task started')
-    #   asyncio.create_task(schedule(validate, 'every 1 min', hrs=None, mins=range(0, 60, 1)))
-    # if (t[0] >=2021 and t[5] == 59):
-    #   print('2nd task')
-    # if (t[0] < 2020):
-    #   dbg('time_ntp every hour task started')
-    #   asyncio.create_task(schedule(time_ntp, 'every 59 min', hrs=None, mins=range(0, 60, 59)))
-    # await task
-    # asyncio.create_task(schedule(gsm.statuscheck, 'every 1 min', hrs=None, mins=range(0, 60, 1)))
-    # print('3rd task')
-    # asyncio.create_task(schedule(validate, 'every 1 min', hrs=None, mins=range(0, 60, 1)))
-    while True:
-        await asyncio.sleep(1)
-
-try:
-    asyncio.run(all_tasks())
-except KeyboardInterrupt:
-    dbg('Keyboard Interrupted')  # This mechanism doesn't work on Unix build.
-finally:
-    wdt.feed()
-    # asyncio.run(server.close())
-    _ = asyncio.new_event_loop()
+if thread_available:
+    print("Starting echo serviceList on separated thread\n")
+    _thread.start_new_thread(thread_echo, ("",))
+    #_thread.start_new_thread(writer, (csc,))
+else:
+    print("Starting echo services\n")
+    thread_echo("")
+    #writer(csc)

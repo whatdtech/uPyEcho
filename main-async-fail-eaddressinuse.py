@@ -30,12 +30,13 @@ import machine
 import network, ntptime
 import time
 from machine import Pin, WDT
-try:
-    import _thread
+import uasyncio as asyncio
+# try:
+#     import _thread
 
-    thread_available = True
-except:
-    thread_available = False
+#     thread_available = True
+# except:
+#     thread_available = False
 
 try:
     import uselect as select
@@ -367,21 +368,21 @@ def set_global_exception():
         import sys
         sys.print_exception(context["exception"])
         sys.exit()
-    # loop = asyncio.get_event_loop()
-    # loop.set_exception_handler(handle_exception)
+    loop = asyncio.get_event_loop()
+    loop.set_exception_handler(handle_exception)
 
-def notifier(csc):
+async def notifier(csc):
     while True:
         wdt.feed()
         dbg("awaiting connection...")
-        csc.connected.wait()
+        await csc.connected.wait()
         dbg("connected...")
         while csc.connected.is_set():
             dbg("notifying...")
             csc.notify()
-            time.sleep_ms(1000)
+            await asyncio.sleep_ms(1000)
         dbg("disconnected...")
-def writer(csc):
+async def writer(csc):
     # csc.irq(handler=on_rx)
     def on_rx():
         # print("rx: ", uart.read().decode().strip())
@@ -395,16 +396,14 @@ def writer(csc):
     while True:
         wdt.feed()
         dbg("awaiting connection...")
-        time.sleep_ms(1000)
-        csc.connected.wait()
+        await csc.connected.wait()
         dbg("connected...")
         while csc.connected.is_set():
             dbg("waiting for client token...")
             # csc.notif(str(77) + "\n")
             # csc.write(str(77) + "\n")
-            time.sleep_ms(1000)
+            await asyncio.sleep_ms(1000)
         dbg("disconnected...")
-
 
 csc = CSCDevice(name="wtt", wheel_pin=Pin(32), crank_pin=Pin(33), data = '88')
 class fauxmo(upnp_device):
@@ -774,7 +773,7 @@ class InvalidPortException(Exception):
     pass
 
 
-def thread_echo(args):
+async def thread_echo(args):
     global DEBUG
     # global clock
     # global ws2812_chain
@@ -823,7 +822,12 @@ def thread_echo(args):
         {
             "description": "orange led",
             "port": 12344,
-            "handler": rest_api_handler1((255, 165, 0), 90),
+            "handler": gpio_handler(13),
+        },
+        {
+            "description": "ble test",
+            "port": 12344,
+            "handler": gpio_handler(13),
         },
     ]
 
@@ -883,11 +887,45 @@ def thread_echo(args):
             # break
 
 
-if thread_available:
-    print("Starting echo serviceList on separated thread\n")
-    _thread.start_new_thread(thread_echo, ("",))
-    _thread.start_new_thread(writer, (csc,))
-else:
-    print("Starting echo services\n")
-    thread_echo("")
-    writer(csc)
+# if thread_available:
+#     print("Starting echo serviceList on separated thread\n")
+#     _thread.start_new_thread(thread_echo, ("",))
+# else:
+#     print("Starting echo services\n")
+#     thread_echo("")
+
+async def all_tasks():
+    wdt.feed()
+    print("free ram {!r}".format(gc.mem_free()))
+
+    dbg('1st task')
+    set_global_exception()
+    # csc = CSCDevice(name="wtt", wheel_pin=Pin(13), crank_pin=Pin(14), data = '88')
+    asyncio.create_task(writer(csc))
+    asyncio.create_task(thread_echo(""))
+    # t = time.localtime(time.time() + 19800)
+    # try:
+    #   await asyncio.wait_for(time_match(), (56-t[5]))
+    # except asyncio.TimeoutError:
+    #   dbg('schedule validate every min task started')
+    #   asyncio.create_task(schedule(validate, 'every 1 min', hrs=None, mins=range(0, 60, 1)))
+    # if (t[0] >=2021 and t[5] == 59):
+    #   print('2nd task')
+    # if (t[0] < 2020):
+    #   dbg('time_ntp every hour task started')
+    #   asyncio.create_task(schedule(time_ntp, 'every 59 min', hrs=None, mins=range(0, 60, 59)))
+    # await task
+    # asyncio.create_task(schedule(gsm.statuscheck, 'every 1 min', hrs=None, mins=range(0, 60, 1)))
+    # print('3rd task')
+    # asyncio.create_task(schedule(validate, 'every 1 min', hrs=None, mins=range(0, 60, 1)))
+    while True:
+        await asyncio.sleep(1)
+
+try:
+    asyncio.run(all_tasks())
+except KeyboardInterrupt:
+    dbg('Keyboard Interrupted')  # This mechanism doesn't work on Unix build.
+finally:
+    wdt.feed()
+    # asyncio.run(server.close())
+    _ = asyncio.new_event_loop()
