@@ -18,8 +18,8 @@
 # boot.py -- run on boot-up
 
 # wlan access
-SSID = ""
-WPA2_PASS = ""
+SSID = "BHAVISHYASRI_ACT"
+WPA2_PASS = "Buddi@143"
 
 ssid_ = SSID
 wpa2_pass = WPA2_PASS

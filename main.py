@@ -713,7 +713,7 @@ class rest_api_handler1(object):
         # global_epoch = timeutils.epoch() # updating time using ntp
         # data = [self.on_color for i in range(ledNumber)]
         # ws2812_chain.show(data)
-        dbg("response on")
+        print("response on")
         return True
 
     def off(self):
@@ -722,7 +722,7 @@ class rest_api_handler1(object):
         # global_epoch = timeutils.epoch() # updating time using ntp
         # data = [(0, 0, 0) for i in range(ledNumber)]
         # ws2812_chain.show(data)
-        dbg("response off")
+        print("response off")
         return True
 
 class rest_api_handler(object):
@@ -870,7 +870,14 @@ def thread_echo(args):
             ntptime.settime()
         except Exception as e:
             dbg(e)
-
+    elif uname().machine == "ESP module with ESP8266":
+        # Wemos ESP-WROOM-32
+        clock = RTC()  # gmtime function needed
+        #clock.ntp_sync("time1.google.com")
+        try:
+            ntptime.settime()
+        except Exception as e:
+            dbg(e)
     dbg("Entering main loop\n")
     while True:
         try:
