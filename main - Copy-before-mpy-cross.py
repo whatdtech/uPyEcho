@@ -1,4 +1,30 @@
+#!/usr/bin/env python
 
+"""
+The MIT License (MIT)
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+Copyright (c) 2015 Maker Musings
+Copyright (c) 2018 Mauro Riva (lemariva.com) for MicroPython on ESP32 and Amazon Echo 2nd Gen.
+
+For a complete discussion, see http://www.makermusings.com
+More info about the MicroPython Version see https://lemariva.com
+
+"""
 import gc
 import machine
 import network, ntptime
@@ -380,7 +406,7 @@ def writer(csc):
         dbg("disconnected...")
 
 
-csc = CSCDevice(name="yenni", wheel_pin=Pin(32), crank_pin=Pin(33), data = '88')
+csc = CSCDevice(name="wtt", wheel_pin=Pin(32), crank_pin=Pin(33), data = '88')
 class fauxmo(upnp_device):
     """
      This subclass does the bulk of the work to mimic a WeMo switch on the network.
@@ -774,115 +800,30 @@ def thread_echo(args):
      Then, the maximal device number is limited to 3.
     """
     devices = [
-        # {
-        #     "description": "hall light",
-        #     "port": 12350,
-        #     "handler": gpio_handler(16),
-        # },
-        # {
-        #     "description": "hall fan1",
-        #     "port": 12351,
-        #     "handler": gpio_handler(17),
-        # },
-        # {
-        #     "description": "hall fan2",
-        #     "port": 12352,
-        #     "handler": gpio_handler(21),
-        # },
         {
-            "description": "tv",
-            "port": 12353,
-            "handler": gpio_handler(18),
+            "description": "white led",
+            "port": 8081,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
-            "description": "speakers",
-            "port": 12354,
-            "handler": gpio_handler(19),
+            "description": "red led",
+            "port": 8082,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
-            "description": "bedroom light",
-            "port": 12355,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&light1&on', 'http://192.168.55.123/trigger&bedroom1&light1&off'),
+            "description": "blue led",
+            "port": 8083,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
-            "description": "bedroom fan",
-            "port": 12356,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&fan&on', 'http://192.168.55.123/trigger&bedroom1&fan&off'),
+            "description": "green led",
+            "port": 8084,
+            "handler": rest_api_handler1((0, 255, 0), 90),
         },
         {
-            "description": "decoration light",
-            "port": 12357,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&decor&on', 'http://192.168.55.123/trigger&bedroom1&decor&off'),
-        },
-        {
-            "description": "bedroom fan 2",
-            "port": 12358,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&fan&on', 'http://192.168.55.123/trigger&bedroom1&fan&off'),
-        },
-        {
-            "description": "bedroom light 2",
-            "port": 12359,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&light2&on', 'http://192.168.55.123/trigger&bedroom1&light2&off'),
-        },
-        {
-            "description": "bedroom ac",
-            "port": 12360,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&ac&on', 'http://192.168.55.123/trigger&bedroom1&ac&off'),
-        },
-        {
-            "description": "second bedroom light",
-            "port": 12361,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom2&light1&on', 'http://192.168.55.123/trigger&bedroom2&light1&off'),
-        },
-        {
-            "description": "second bedroom fan",
-            "port": 12362,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom2&fan&on', 'http://192.168.55.123/trigger&bedroom2&fan&off'),
-        },
-        {
-            "description": "second bedroom ac",
-            "port": 12363,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom2&ac&on', 'http://192.168.55.123/trigger&bedroom2&ac&off'),
-        },
-        {
-            "description": "third bedroom light",
-            "port": 12364,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom3&light1&on', 'http://192.168.55.123/trigger&bedroom3&light1&off'),
-        },
-        {
-            "description": "third bedroom fan",
-            "port": 12365,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom3&fan&on', 'http://192.168.55.123/trigger&bedroom3&fan&off'),
-        },
-        {
-            "description": "motor",
-            "port": 12366,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&other&motor&on', 'http://192.168.55.123/trigger&other&motor&off'),
-        },
-        {
-            "description": "outside lights",
-            "port": 12367,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&other&light1&on', 'http://192.168.55.123/trigger&other&light1&off'),
-        },
-        {
-            "description": "step lights",
-            "port": 12368,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&other&light2&on', 'http://192.168.55.123/trigger&other&light2&off'),
-        },
-        {
-            "description": "kitchen light",
-            "port": 12369,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&kitchen&light1&on', 'http://192.168.55.123/trigger&kitchen&light1&off'),
-        },
-        {
-            "description": "kitchen fan",
-            "port": 12370,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&kitchen&fan&on', 'http://192.168.55.123/trigger&kitchen&fan&off'),
-        },
-        {
-            "description": "kitchen fridge",
-            "port": 12371,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&kitchen&fridge&on', 'http://192.168.55.123/trigger&kitchen&fridge&off'),
+            "description": "orange led",
+            "port": 8085,
+            "handler": rest_api_handler1((255, 165, 0), 90),
         },
     ]
 
@@ -928,7 +869,7 @@ def thread_echo(args):
         try:
             ntptime.settime()
         except Exception as e:
-            dbg('exception in ntptime loop:',e)
+            dbg(e)
     elif uname().machine == "ESP module with ESP8266":
         # Wemos ESP-WROOM-32
         clock = RTC()  # gmtime function needed
@@ -945,8 +886,7 @@ def thread_echo(args):
             time.sleep(0.1)
             gc.collect()
         except Exception as e:
-            dbg('exception in main loop:',e)
-            machine.reset()
+            dbg(e)
             # break
 
 

@@ -380,7 +380,7 @@ def writer(csc):
         dbg("disconnected...")
 
 
-csc = CSCDevice(name="yenni", wheel_pin=Pin(32), crank_pin=Pin(33), data = '88')
+csc = CSCDevice(name="bagyalakshmi_home_automation", wheel_pin=Pin(32), crank_pin=Pin(33), data = '88')
 class fauxmo(upnp_device):
     """
      This subclass does the bulk of the work to mimic a WeMo switch on the network.
@@ -774,115 +774,95 @@ def thread_echo(args):
      Then, the maximal device number is limited to 3.
     """
     devices = [
-        # {
-        #     "description": "hall light",
-        #     "port": 12350,
-        #     "handler": gpio_handler(16),
-        # },
-        # {
-        #     "description": "hall fan1",
-        #     "port": 12351,
-        #     "handler": gpio_handler(17),
-        # },
-        # {
-        #     "description": "hall fan2",
-        #     "port": 12352,
-        #     "handler": gpio_handler(21),
-        # },
+        {
+            "description": "hall light",
+            "port": 8081,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
+        },
+        {
+            "description": "hall fan",
+            "port": 8082,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
+        },
         {
             "description": "tv",
-            "port": 12353,
-            "handler": gpio_handler(18),
+            "port": 8083,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
             "description": "speakers",
-            "port": 12354,
-            "handler": gpio_handler(19),
+            "port": 8084,
+            "handler": rest_api_handler1((0, 255, 0), 90),
         },
         {
             "description": "bedroom light",
-            "port": 12355,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&light1&on', 'http://192.168.55.123/trigger&bedroom1&light1&off'),
+            "port": 8085,
+            "handler": gpio_handler(2),
         },
         {
             "description": "bedroom fan",
-            "port": 12356,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&fan&on', 'http://192.168.55.123/trigger&bedroom1&fan&off'),
+            "port": 8081,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
             "description": "decoration light",
-            "port": 12357,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&decor&on', 'http://192.168.55.123/trigger&bedroom1&decor&off'),
+            "port": 8082,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
             "description": "bedroom fan 2",
-            "port": 12358,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&fan&on', 'http://192.168.55.123/trigger&bedroom1&fan&off'),
+            "port": 8083,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
             "description": "bedroom light 2",
-            "port": 12359,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&light2&on', 'http://192.168.55.123/trigger&bedroom1&light2&off'),
+            "port": 8084,
+            "handler": rest_api_handler1((0, 255, 0), 90),
         },
         {
             "description": "bedroom ac",
-            "port": 12360,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&ac&on', 'http://192.168.55.123/trigger&bedroom1&ac&off'),
+            "port": 8084,
+            "handler": rest_api_handler1((0, 255, 0), 90),
         },
         {
             "description": "second bedroom light",
-            "port": 12361,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom2&light1&on', 'http://192.168.55.123/trigger&bedroom2&light1&off'),
+            "port": 8085,
+            "handler": gpio_handler(2),
         },
         {
             "description": "second bedroom fan",
-            "port": 12362,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom2&fan&on', 'http://192.168.55.123/trigger&bedroom2&fan&off'),
+            "port": 8081,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
             "description": "second bedroom ac",
-            "port": 12363,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom2&ac&on', 'http://192.168.55.123/trigger&bedroom2&ac&off'),
+            "port": 8082,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
             "description": "third bedroom light",
-            "port": 12364,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom3&light1&on', 'http://192.168.55.123/trigger&bedroom3&light1&off'),
+            "port": 8083,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
             "description": "third bedroom fan",
-            "port": 12365,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom3&fan&on', 'http://192.168.55.123/trigger&bedroom3&fan&off'),
+            "port": 8084,
+            "handler": rest_api_handler1((0, 255, 0), 90),
         },
         {
             "description": "motor",
-            "port": 12366,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&other&motor&on', 'http://192.168.55.123/trigger&other&motor&off'),
+            "port": 8085,
+            "handler": gpio_handler(2),
         },
         {
             "description": "outside lights",
-            "port": 12367,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&other&light1&on', 'http://192.168.55.123/trigger&other&light1&off'),
+            "port": 8085,
+            "handler": gpio_handler(2),
         },
         {
             "description": "step lights",
-            "port": 12368,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&other&light2&on', 'http://192.168.55.123/trigger&other&light2&off'),
-        },
-        {
-            "description": "kitchen light",
-            "port": 12369,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&kitchen&light1&on', 'http://192.168.55.123/trigger&kitchen&light1&off'),
-        },
-        {
-            "description": "kitchen fan",
-            "port": 12370,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&kitchen&fan&on', 'http://192.168.55.123/trigger&kitchen&fan&off'),
-        },
-        {
-            "description": "kitchen fridge",
-            "port": 12371,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&kitchen&fridge&on', 'http://192.168.55.123/trigger&kitchen&fridge&off'),
+            "port": 8085,
+            "handler": gpio_handler(2),
         },
     ]
 
@@ -953,8 +933,8 @@ def thread_echo(args):
 if thread_available:
     print("Starting echo serviceList on separated thread\n")
     _thread.start_new_thread(thread_echo, ("",))
-    #_thread.start_new_thread(writer, (csc,))
+    _thread.start_new_thread(writer, (csc,))
 else:
     print("Starting echo services\n")
     thread_echo("")
-    #writer(csc)
+    writer(csc)

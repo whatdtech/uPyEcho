@@ -3,13 +3,13 @@ import gc
 import machine
 import network, ntptime
 import time
-from machine import Pin, WDT
-try:
-    import _thread
+from machine import Pin
+# try:
+#     import _thread
 
-    thread_available = True
-except:
-    thread_available = False
+#     thread_available = True
+# except:
+#     thread_available = False
 
 try:
     import uselect as select
@@ -29,11 +29,11 @@ try:
     import ustruct as struct
 except:
     import struct
-from csc_device import CSCDevice
+# from csc_device import CSCDevice
 # for ws2812b
 #from wipyWS2812.ws2812 import WS2812
 from uos import uname
-wdt=WDT(timeout=180000)
+#wdt=WDT(timeout=180000)
 try:
     from machine import RTC
 
@@ -336,51 +336,51 @@ class upnp_device:
         except Exception as e:
             dbg("Got problem to send response %s" % str(e))
 
-def set_global_exception():
-    def handle_exception(loop, context):
-        import sys
-        sys.print_exception(context["exception"])
-        sys.exit()
-    # loop = asyncio.get_event_loop()
-    # loop.set_exception_handler(handle_exception)
+# def set_global_exception():
+#     def handle_exception(loop, context):
+#         import sys
+#         sys.print_exception(context["exception"])
+#         sys.exit()
+#     # loop = asyncio.get_event_loop()
+#     # loop.set_exception_handler(handle_exception)
 
-def notifier(csc):
-    while True:
-        wdt.feed()
-        dbg("awaiting connection...")
-        csc.connected.wait()
-        dbg("connected...")
-        while csc.connected.is_set():
-            dbg("notifying...")
-            csc.notify()
-            time.sleep_ms(1000)
-        dbg("disconnected...")
-def writer(csc):
-    # csc.irq(handler=on_rx)
-    def on_rx():
-        # print("rx: ", uart.read().decode().strip())
-        x = csc.read().decode().strip()
-        dbg('x')
-        dbg(x)
-        if (x == '8' or x == 8):
-            dbg('received 8')
-            csc.notif(str(77) + "\n")
-    csc.irq(handler=on_rx)
-    while True:
-        wdt.feed()
-        dbg("awaiting connection...")
-        time.sleep_ms(1000)
-        csc.connected.wait()
-        dbg("connected...")
-        while csc.connected.is_set():
-            dbg("waiting for client token...")
-            # csc.notif(str(77) + "\n")
-            # csc.write(str(77) + "\n")
-            time.sleep_ms(1000)
-        dbg("disconnected...")
+# def notifier(csc):
+#     while True:
+#         wdt.feed()
+#         dbg("awaiting connection...")
+#         csc.connected.wait()
+#         dbg("connected...")
+#         while csc.connected.is_set():
+#             dbg("notifying...")
+#             csc.notify()
+#             time.sleep_ms(1000)
+#         dbg("disconnected...")
+# def writer(csc):
+#     # csc.irq(handler=on_rx)
+#     def on_rx():
+#         # print("rx: ", uart.read().decode().strip())
+#         x = csc.read().decode().strip()
+#         dbg('x')
+#         dbg(x)
+#         if (x == '8' or x == 8):
+#             dbg('received 8')
+#             csc.notif(str(77) + "\n")
+#     csc.irq(handler=on_rx)
+#     while True:
+#         wdt.feed()
+#         dbg("awaiting connection...")
+#         time.sleep_ms(1000)
+#         csc.connected.wait()
+#         dbg("connected...")
+#         while csc.connected.is_set():
+#             dbg("waiting for client token...")
+#             # csc.notif(str(77) + "\n")
+#             # csc.write(str(77) + "\n")
+#             time.sleep_ms(1000)
+#         dbg("disconnected...")
 
 
-csc = CSCDevice(name="yenni", wheel_pin=Pin(32), crank_pin=Pin(33), data = '88')
+# csc = CSCDevice(name="wtt", wheel_pin=Pin(32), crank_pin=Pin(33), data = '88')
 class fauxmo(upnp_device):
     """
      This subclass does the bulk of the work to mimic a WeMo switch on the network.
@@ -713,18 +713,18 @@ class rest_api_handler(object):
         return r.status_code == 200
 
 
-class rest_api_handler_ble(object):
-    def __init__(self, on_cmd, off_cmd):
-        self.on_cmd = on_cmd
-        self.off_cmd = off_cmd
+# class rest_api_handler_ble(object):
+#     def __init__(self, on_cmd, off_cmd):
+#         self.on_cmd = on_cmd
+#         self.off_cmd = off_cmd
 
-    def on(self):
-        r = requests.get(self.on_cmd)
-        return r.status_code == 200
+#     def on(self):
+#         r = requests.get(self.on_cmd)
+#         return r.status_code == 200
 
-    def off(self):
-        r = requests.get(self.off_cmd)
-        return r.status_code == 200
+#     def off(self):
+#         r = requests.get(self.off_cmd)
+#         return r.status_code == 200
 
 
 class gpio_handler(object):
@@ -774,115 +774,30 @@ def thread_echo(args):
      Then, the maximal device number is limited to 3.
     """
     devices = [
-        # {
-        #     "description": "hall light",
-        #     "port": 12350,
-        #     "handler": gpio_handler(16),
-        # },
-        # {
-        #     "description": "hall fan1",
-        #     "port": 12351,
-        #     "handler": gpio_handler(17),
-        # },
-        # {
-        #     "description": "hall fan2",
-        #     "port": 12352,
-        #     "handler": gpio_handler(21),
-        # },
         {
-            "description": "tv",
-            "port": 12353,
-            "handler": gpio_handler(18),
+            "description": "white led",
+            "port": 8081,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
-            "description": "speakers",
-            "port": 12354,
-            "handler": gpio_handler(19),
+            "description": "red led",
+            "port": 8082,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
-            "description": "bedroom light",
-            "port": 12355,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&light1&on', 'http://192.168.55.123/trigger&bedroom1&light1&off'),
+            "description": "blue led",
+            "port": 8083,
+            "handler": rest_api_handler('http://192.168.0.110/ha-api?cmd=on&a=office', 'http://192.168.0.110/ha-api?cmd=off&a=office'),
         },
         {
-            "description": "bedroom fan",
-            "port": 12356,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&fan&on', 'http://192.168.55.123/trigger&bedroom1&fan&off'),
+            "description": "green led",
+            "port": 8084,
+            "handler": rest_api_handler1((0, 255, 0), 90),
         },
         {
-            "description": "decoration light",
-            "port": 12357,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&decor&on', 'http://192.168.55.123/trigger&bedroom1&decor&off'),
-        },
-        {
-            "description": "bedroom fan 2",
-            "port": 12358,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&fan&on', 'http://192.168.55.123/trigger&bedroom1&fan&off'),
-        },
-        {
-            "description": "bedroom light 2",
-            "port": 12359,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&light2&on', 'http://192.168.55.123/trigger&bedroom1&light2&off'),
-        },
-        {
-            "description": "bedroom ac",
-            "port": 12360,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom1&ac&on', 'http://192.168.55.123/trigger&bedroom1&ac&off'),
-        },
-        {
-            "description": "second bedroom light",
-            "port": 12361,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom2&light1&on', 'http://192.168.55.123/trigger&bedroom2&light1&off'),
-        },
-        {
-            "description": "second bedroom fan",
-            "port": 12362,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom2&fan&on', 'http://192.168.55.123/trigger&bedroom2&fan&off'),
-        },
-        {
-            "description": "second bedroom ac",
-            "port": 12363,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom2&ac&on', 'http://192.168.55.123/trigger&bedroom2&ac&off'),
-        },
-        {
-            "description": "third bedroom light",
-            "port": 12364,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom3&light1&on', 'http://192.168.55.123/trigger&bedroom3&light1&off'),
-        },
-        {
-            "description": "third bedroom fan",
-            "port": 12365,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&bedroom3&fan&on', 'http://192.168.55.123/trigger&bedroom3&fan&off'),
-        },
-        {
-            "description": "motor",
-            "port": 12366,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&other&motor&on', 'http://192.168.55.123/trigger&other&motor&off'),
-        },
-        {
-            "description": "outside lights",
-            "port": 12367,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&other&light1&on', 'http://192.168.55.123/trigger&other&light1&off'),
-        },
-        {
-            "description": "step lights",
-            "port": 12368,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&other&light2&on', 'http://192.168.55.123/trigger&other&light2&off'),
-        },
-        {
-            "description": "kitchen light",
-            "port": 12369,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&kitchen&light1&on', 'http://192.168.55.123/trigger&kitchen&light1&off'),
-        },
-        {
-            "description": "kitchen fan",
-            "port": 12370,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&kitchen&fan&on', 'http://192.168.55.123/trigger&kitchen&fan&off'),
-        },
-        {
-            "description": "kitchen fridge",
-            "port": 12371,
-            "handler": rest_api_handler('http://192.168.55.123/trigger&kitchen&fridge&on', 'http://192.168.55.123/trigger&kitchen&fridge&off'),
+            "description": "orange led",
+            "port": 8085,
+            "handler": gpio_handler(2),
         },
     ]
 
@@ -928,7 +843,7 @@ def thread_echo(args):
         try:
             ntptime.settime()
         except Exception as e:
-            dbg('exception in ntptime loop:',e)
+            dbg(e)
     elif uname().machine == "ESP module with ESP8266":
         # Wemos ESP-WROOM-32
         clock = RTC()  # gmtime function needed
@@ -945,16 +860,15 @@ def thread_echo(args):
             time.sleep(0.1)
             gc.collect()
         except Exception as e:
-            dbg('exception in main loop:',e)
-            machine.reset()
+            dbg(e)
             # break
 
 
-if thread_available:
-    print("Starting echo serviceList on separated thread\n")
-    _thread.start_new_thread(thread_echo, ("",))
-    #_thread.start_new_thread(writer, (csc,))
-else:
-    print("Starting echo services\n")
-    thread_echo("")
-    #writer(csc)
+# if thread_available:
+#     print("Starting echo serviceList on separated thread\n")
+#     _thread.start_new_thread(thread_echo, ("",))
+#     #_thread.start_new_thread(writer, (csc,))
+# else:
+#     print("Starting echo services\n")
+#     thread_echo("")
+#     #writer(csc)
